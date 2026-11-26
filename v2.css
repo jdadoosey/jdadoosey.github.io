@@ -1,0 +1,454 @@
+/* Version 2: the home page as a macOS desktop with folders */
+.v2-home { position: relative; min-height: calc(100vh - 95px); min-height: calc(100svh - 95px); padding-bottom: 80px; }
+.v2-hero { padding: 257px 0 0 12px; max-width: 755px; }
+.v2-name { font-size: 80px; line-height: 90px; letter-spacing: -1.6px; white-space: nowrap; }
+.v2-name .line > span {
+  color: #fff;
+  padding-right: 0.08em; /* keeps the italic last letter from being clipped */
+}
+.v2-intro { margin-top: 12px; font-size: 16px; line-height: 24px; }
+.v2-intro p + p { margin-top: 24px; }
+
+/* The "desktop": folders sit where they are in Figma, like icons on a Mac */
+.desktop { position: absolute; inset: 0; pointer-events: none; }
+.folder {
+  position: absolute; pointer-events: auto;
+  display: flex; flex-direction: column; align-items: flex-start;
+  border-radius: 10px; outline: none;
+}
+.folder-photo { top: 148px; left: calc(100% - var(--page-x) - 218px); }
+.folder-product { top: 496px; left: calc(100% - var(--page-x) - 265px); }
+.folder-icon {
+  position: relative; display: block; width: 208px; height: 180px; overflow: hidden; opacity: 0.6;
+  transition: width 0.35s var(--ease-out), height 0.35s var(--ease-out), opacity 0.3s ease, filter 0.3s ease;
+}
+.folder-icon img { position: absolute; max-width: none; width: 109.67%; height: 127.09%; left: -5.19%; top: -13.55%; pointer-events: none; }
+.folder-product .folder-icon img { width: 110.79%; height: 127.95%; left: -5.54%; top: -13.3%; }
+.folder-label {
+  font-size: 20px; letter-spacing: -0.4px; line-height: normal;
+  color: #fff;
+  transition: font-size 0.35s var(--ease-out);
+}
+/* highlighted state from the Figma component */
+.folder:hover .folder-icon, .folder:focus-visible .folder-icon { width: 241px; height: 208px; opacity: 1; }
+.folder:hover .folder-label, .folder:focus-visible .folder-label { font-size: 24px; letter-spacing: -0.48px; }
+.folder:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+
+/* opening a folder: it zooms toward you, then the page changes */
+.js .folder.opening, .folder.opening { transform: scale(1.25); opacity: 0; transition: transform 0.28s ease-in, opacity 0.28s ease-in; }
+
+@media (max-width: 1100px) {
+  .v2-home { min-height: 0; }
+  .v2-hero { padding: 80px 0 0; }
+  .v2-name { font-size: 64px; line-height: 72px; white-space: normal; }
+  .desktop { position: static; display: flex; gap: 48px; margin-top: 56px; pointer-events: auto; }
+  .folder { position: relative; top: auto; left: auto; }
+}
+@media (max-width: 760px) {
+  .v2-hero { padding-top: 40px; }
+  .v2-name { font-size: 44px; line-height: 52px; }
+  .desktop { gap: 24px; justify-content: space-between; }
+  .folder-icon { width: 150px; height: 130px; opacity: 1; }
+  .folder:hover .folder-icon, .folder:focus-visible .folder-icon { width: 150px; height: 130px; }
+  .folder-label, .folder:hover .folder-label { font-size: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .folder.opening, .folder.opening { transform: none; opacity: 1; }
+}
+
+/* ---------- Photo folders (built from the macOS folder in Figma) ---------- */
+.pfolder-link { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; outline: none; border-radius: 12px; }
+.pfolder-link:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+.pfolder {
+  position: relative; display: block; width: 100%; aspect-ratio: 940 / 790;
+  perspective: 900px; filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.55));
+  transition: transform 0.4s var(--ease-out);
+}
+.pf-back {
+  position: absolute; inset: 0;
+  background: var(--img) center 30% / cover;
+  -webkit-mask: url(assets/v2/folder-shape.svg) center / 100% 100% no-repeat;
+  mask: url(assets/v2/folder-shape.svg) center / 100% 100% no-repeat;
+  filter: brightness(0.42) saturate(0.85);
+}
+.pf-paper {
+  position: absolute; left: 5%; right: 5%; top: 13%; height: 40%;
+  background: linear-gradient(#f4f2ee, #dedad3); border-radius: 2.5% / 6%;
+  transition: transform 0.45s var(--ease-out);
+}
+.pf-front {
+  position: absolute; left: 0; right: 0; top: 16.96%; bottom: 0;
+  border-radius: 7.66% / 10.98%; overflow: hidden;
+  background: var(--img) center 35% / cover;
+  box-shadow: inset 0 6px 8px rgba(255, 255, 255, 0.3), inset 0 -60px 90px rgba(0, 0, 0, 0.35), 0 -8px 22px rgba(0, 0, 0, 0.45);
+  transform-origin: 50% 100%;
+  transition: transform 0.45s var(--ease-out);
+}
+/* the two strips along the bottom edge of a macOS folder */
+.pf-front::before, .pf-front::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 2.75%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(0,0,0,0.16));
+}
+.pf-front::before { top: 85.1%; }
+.pf-front::after { top: 90.7%; }
+.pf-name {
+  font-size: 24px; letter-spacing: -0.48px; line-height: 1.2;
+  color: #fff;
+}
+.pf-meta { font-size: 13px; line-height: 18px; color: rgba(255, 255, 255, 0.5); margin-top: -6px; }
+@media (hover: hover) {
+  .pfolder-link:hover .pfolder { transform: translateY(-6px); }
+  .pfolder-link:hover .pf-front { transform: rotateX(-26deg); }
+  .pfolder-link:hover .pf-paper { transform: translateY(-24%); }
+}
+.pfolder-link:focus-visible .pf-front { transform: rotateX(-26deg); }
+.pfolder-link:focus-visible .pf-paper { transform: translateY(-24%); }
+.js .pfolder-link.opening, .pfolder-link.opening { transform: scale(1.12); opacity: 0; transition: transform 0.28s ease-in, opacity 0.28s ease-in; }
+
+/* Photography: a Finder-style grid of folders */
+.folder-grid { grid-template-columns: repeat(4, 1fr); gap: 56px 40px; margin-top: 72px; }
+/* Product Design: folders in the sideways-scrolling row */
+.project-row .pfolder-link { flex: 0 0 360px; padding-top: 8px; }
+.project-row.folder-row { gap: 48px; padding-top: 10px; padding-bottom: 44px; margin-bottom: 88px; }
+
+/* ---------- Finder-style path bar on inner pages ---------- */
+.pathbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 16px; line-height: 28px; color: rgba(255,255,255,0.55); }
+.pathbar a, .pathbar span[aria-current] { display: inline-flex; align-items: center; gap: 8px; transition: color 0.2s ease; }
+.pathbar a:hover { color: var(--accent); }
+.pathbar span[aria-current] { color: #fff; }
+.pathbar .sep { opacity: 0.45; }
+.mini-folder, .dropdown a::before {
+  width: 17px; height: 14.3px; flex: 0 0 auto; background: var(--accent);
+  -webkit-mask: url(assets/v2/folder-shape.svg) center / 100% 100% no-repeat;
+  mask: url(assets/v2/folder-shape.svg) center / 100% 100% no-repeat;
+}
+.mini-folder { display: inline-block; }
+/* tiny folder icons in the header menus too */
+.dropdown a { display: flex; align-items: center; gap: 10px; }
+.dropdown a::before { content: ""; opacity: 0.5; background: currentColor; }
+.dropdown a:hover::before, .dropdown a[aria-current="page"]::before { opacity: 1; }
+
+@media (max-width: 1100px) {
+  .folder-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 760px) {
+  .folder-grid { grid-template-columns: repeat(2, 1fr); gap: 32px 20px; margin-top: 40px; }
+  .pf-name { font-size: 19px; }
+  .project-row .pfolder-link { flex-basis: 78%; }
+  .pathbar { font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pfolder-link.opening { transform: none; opacity: 1; }
+}
+
+/* ---------- Home folders that show what's inside ---------- */
+.folder .lf { width: 208px; transition: width 0.35s var(--ease-out), transform 0.4s var(--ease-out); }
+.folder:hover .lf, .folder:focus-visible .lf { width: 241px; }
+.lf .pf-back { background: linear-gradient(180deg, #47474a, #2b2b2e); filter: none; }
+.lf-front {
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(180deg, rgba(74, 74, 78, 0.92), rgba(40, 40, 43, 0.96));
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 6px 10px rgba(255,255,255,0.06), 0 -8px 20px rgba(0,0,0,0.5);
+}
+.lf-glyph {
+  width: 30%; height: auto; margin-top: -6%;
+  fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,0.6));
+  transition: transform 0.4s var(--ease-out);
+}
+/* what's inside the folder, peeking out the top */
+.lf-items { position: absolute; left: 6%; right: 6%; top: 0; height: 62%; }
+.lf-item {
+  position: absolute; bottom: 0; display: block; object-fit: cover;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.45);
+  transform-origin: 50% 100%;
+  transition: transform 0.5s var(--ease-out);
+}
+/* Photography: three prints with white borders */
+.lf-photo .lf-item { width: 42%; aspect-ratio: 4 / 5; border: 3px solid #f3f1ec; border-bottom-width: 9px; border-radius: 2px; background: #f3f1ec; }
+.lf-photo .i1 { left: 4%;  transform: translateY(6%) rotate(-10deg); }
+.lf-photo .i2 { left: 29%; transform: translateY(-4%) rotate(1deg); z-index: 1; }
+.lf-photo .i3 { left: 54%; transform: translateY(8%) rotate(11deg); }
+.lf-photo:hover .i1, .lf-photo:focus-visible .i1 { transform: translate(-14%, -16%) rotate(-18deg); }
+.lf-photo:hover .i2, .lf-photo:focus-visible .i2 { transform: translateY(-30%) rotate(0deg); }
+.lf-photo:hover .i3, .lf-photo:focus-visible .i3 { transform: translate(14%, -14%) rotate(18deg); }
+/* Product Design: three app screens */
+.lf-product .lf-item { width: 60%; aspect-ratio: 4 / 3; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18); background: #111; }
+.lf-product .i1 { left: 0;   transform: translateY(14%) rotate(-7deg); }
+.lf-product .i2 { left: 20%; transform: translateY(0) rotate(0deg); z-index: 1; }
+.lf-product .i3 { left: 40%; transform: translateY(16%) rotate(7deg); }
+.lf-product:hover .i1, .lf-product:focus-visible .i1 { transform: translate(-12%, -8%) rotate(-12deg); }
+.lf-product:hover .i2, .lf-product:focus-visible .i2 { transform: translateY(-24%) rotate(0deg); }
+.lf-product:hover .i3, .lf-product:focus-visible .i3 { transform: translate(12%, -6%) rotate(12deg); }
+/* the front swings open and the mark lifts */
+.folder:hover .lf-front, .folder:focus-visible .lf-front { transform: rotateX(-22deg); }
+.folder:hover .lf-glyph, .folder:focus-visible .lf-glyph { transform: translateY(-4%) scale(1.06); }
+.folder .lf { filter: drop-shadow(0 16px 24px rgba(0,0,0,0.6)); }
+
+@media (max-width: 760px) {
+  .folder .lf, .folder:hover .lf { width: 150px; }
+}
+/* layering + peek fixes */
+.lf .pf-back { z-index: 0; }
+.lf-items { z-index: 1; top: -18%; height: 72%; }
+.lf-front { z-index: 2; background: linear-gradient(180deg, rgba(74, 74, 78, 0.78), rgba(36, 36, 39, 0.9)); }
+.v2-hero { max-width: none; }
+.v2-intro { max-width: 755px; }
+.v2-name .line { padding-right: 0.12em; }
+.lf-product .lf-items { top: -30%; }
+.lf-product .lf-item { width: 64%; }
+.lf-product .i1 { left: -2%; transform: translateY(0) rotate(-8deg); }
+.lf-product .i2 { left: 18%; transform: translateY(-14%) rotate(0deg); }
+.lf-product .i3 { left: 38%; transform: translateY(2%) rotate(8deg); }
+.lf-product:hover .i1, .lf-product:focus-visible .i1 { transform: translate(-12%, -14%) rotate(-13deg); }
+.lf-product:hover .i2, .lf-product:focus-visible .i2 { transform: translateY(-36%) rotate(0deg); }
+.lf-product:hover .i3, .lf-product:focus-visible .i3 { transform: translate(12%, -12%) rotate(13deg); }
+
+/* ===== macOS blue (replaces the orange accent across the folder version) ===== */
+:root {
+  color-scheme: dark;
+  --accent: #0a84ff;          /* macOS system blue, dark mode */
+  --accent-hover: #5eaeff;
+  --accent-tint: rgba(10, 132, 255, 0.2);
+  --folder-front-top: #7cc4f8;
+  --folder-front-bottom: #4ea3ec;
+  --folder-back-top: #4a9be6;
+  --folder-back-bottom: #2f7fd0;
+}
+
+/* ---------- Blue macOS folders ---------- */
+.lf .pf-back { background: linear-gradient(180deg, var(--folder-back-top), var(--folder-back-bottom)); }
+.lf-front {
+  background: linear-gradient(180deg, var(--folder-front-top), var(--folder-front-bottom));
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), inset 0 8px 14px rgba(255,255,255,0.18), inset 0 -18px 30px rgba(20, 90, 170, 0.28), 0 -6px 16px rgba(0, 30, 70, 0.35);
+}
+.lf-front::before, .lf-front::after { background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(20,80,150,0.18)); }
+/* embossed mark, like the symbols macOS stamps on folders */
+.lf-glyph { stroke: rgba(22, 92, 168, 0.85); stroke-width: 2.2; filter: drop-shadow(0 1px 0 rgba(255,255,255,0.45)); }
+.folder .lf { filter: drop-shadow(0 16px 24px rgba(0,0,0,0.55)); }
+
+/* phone screens (PostUp) stand upright instead of lying landscape */
+.lf-phones .lf-items { top: -34%; }
+.lf-phones .lf-item { width: 30%; aspect-ratio: 9 / 18.5; object-fit: contain; background: none; border: 0; border-radius: 0; box-shadow: none; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45)); }
+.lf-phones .i1 { left: 12%; transform: translateY(8%) rotate(-9deg); }
+.lf-phones .i2 { left: 35%; transform: translateY(-6%) rotate(0deg); z-index: 1; }
+.lf-phones .i3 { left: 58%; transform: translateY(10%) rotate(9deg); }
+.lf-phones:hover .i1, .lf-phones:focus-visible .i1 { transform: translate(-18%, -10%) rotate(-15deg); }
+.lf-phones:hover .i2, .lf-phones:focus-visible .i2 { transform: translateY(-26%) rotate(0deg); }
+.lf-phones:hover .i3, .lf-phones:focus-visible .i3 { transform: translate(18%, -8%) rotate(15deg); }
+/* website panels have white backgrounds */
+.lf-sites .lf-item { background: #fff; }
+
+/* ---------- Section pages: text on the left, folders scattered on the right ---------- */
+.v2-section { position: relative; display: grid; grid-template-columns: minmax(0, 520px) 1fr; column-gap: 72px; padding-bottom: 120px; }
+.v2-section .page-intro { padding-top: 160px; align-self: start; }
+.v2-section .body-text { font-size: 16px; line-height: 26px; }
+.sec-desktop { position: relative; min-height: 680px; margin-top: 120px; }
+.sec-desktop .folder { position: absolute; left: var(--x); top: var(--y); }
+.sec-desktop .pf-meta { margin-top: 0; }
+.folder .folder-label + .pf-meta { margin-top: 0; }
+
+@media (max-width: 1100px) {
+  .v2-section { display: block; }
+  .v2-section .page-intro { padding-top: 102px; }
+  .sec-desktop { min-height: 0; margin-top: 90px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 72px 24px; justify-items: center; }
+  .sec-desktop .folder { position: relative; left: auto; top: auto; }
+}
+@media (max-width: 760px) {
+  .v2-section .page-intro { padding-top: 48px; }
+  .sec-desktop { margin-top: 80px; gap: 64px 16px; }
+}
+.sec-desktop .pf-meta { max-width: 230px; }
+
+/* ===== Finder-style folder names + blues matched to the folders ===== */
+:root {
+  --sf: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+  --accent: #65b4f2;         /* the middle of the folder blue */
+  --accent-hover: #8ccaf8;
+  --accent-tint: rgba(101, 180, 242, 0.16);
+  --select: #2f7fd0;         /* the folder's darker blue, used for highlights behind white text */
+}
+/* folder names: Apple's system font, solid white, centred under the folder like Finder */
+.folder { align-items: center; }
+.folder-label, .folder:hover .folder-label, .folder:focus-visible .folder-label {
+  font-family: var(--sf); font-style: normal; font-weight: 500;
+  font-size: 15px; line-height: 20px; letter-spacing: 0;
+  color: #fff; background: none;
+  margin-top: 8px; padding: 1px 8px; border-radius: 5px; text-align: center;
+  transition: background-color 0.2s ease;
+}
+/* hover/selected looks like a selected item in Finder */
+.folder:hover .folder-label, .folder:focus-visible .folder-label { background: var(--select); }
+.folder .pf-meta, .sec-desktop .pf-meta {
+  font-family: var(--sf); font-size: 12px; line-height: 16px; color: rgba(255, 255, 255, 0.55);
+  text-align: center; margin-top: 3px;
+}
+.folder:focus-visible { box-shadow: none; }
+.folder:focus-visible .lf { outline: 2px solid var(--accent); outline-offset: 6px; border-radius: 8px; }
+
+/* header: current section and hover use the folder blue */
+.nav-item.is-section > .nav-link, .nav-item.is-section > .nav-toggle { color: var(--accent); }
+.nav-item:hover > .nav-link, .nav-item:hover > .nav-toggle { color: var(--accent-hover); }
+/* dropdowns behave like macOS menus: blue highlight with white text */
+.dropdown a:hover, .dropdown a:focus-visible { background: var(--select); color: #fff; outline: none; }
+.dropdown a[aria-current="page"] { background: var(--accent-tint); color: var(--accent); }
+.dropdown a[aria-current="page"]:hover { background: var(--select); color: #fff; }
+.dropdown a::before, .mini-folder { background: linear-gradient(180deg, var(--folder-front-top), var(--folder-front-bottom)); opacity: 1; }
+.dropdown a:not(:hover):not([aria-current])::before { opacity: 0.75; }
+/* breadcrumbs */
+.pathbar a:hover { color: var(--accent-hover); }
+.pathbar span[aria-current] { color: #fff; }
+
+/* ===== Apple's system font across the whole folder version (sizes and weights unchanged) ===== */
+:root { --sans: var(--sf); --serif: var(--sf); }
+body, button, input { font-family: var(--sf); }
+/* folder names a little larger */
+.folder-label, .folder:hover .folder-label, .folder:focus-visible .folder-label { font-size: 17px; line-height: 22px; }
+.folder .pf-meta, .sec-desktop .pf-meta { font-size: 13px; line-height: 17px; }
+
+/* ---------- Raw app screens shown inside a simple phone frame ---------- */
+.phones .device { display: block; border-radius: 46px; border: 10px solid #1c1c1e; box-shadow: 0 0 0 1px #3a3a3c, 0 24px 48px rgba(0,0,0,0.5); overflow: hidden; background: #000; aspect-ratio: 393 / 852; }
+.phones .device img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.phones figure { max-width: 340px; }
+.lf-rawphones .lf-item { object-fit: cover; object-position: top; border-radius: 9px; border: 3px solid #111; background: #000; box-shadow: 0 6px 12px rgba(0,0,0,0.45); filter: none; }
+/* ---------- A collage card for a website (Dairy Barn) ---------- */
+.site-collage { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 34px 24px; background: #fff; aspect-ratio: 642 / 578; align-content: center; }
+.site-collage img { width: 100%; aspect-ratio: 800 / 520; object-fit: cover; object-position: top; box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
+.tbc { color: rgba(255,255,255,0.45); font-weight: 400; border-bottom: 1px dashed rgba(255,255,255,0.35); }
+
+/* No italics anywhere in the folder version */
+.serif-italic, .cs-hero-title, .cs-hero-title em, .page-title, .tile-title, .site-name, .card-title, .cs-split-title, .folder-label { font-style: normal; }
+
+/* ---------- iPhone 16 frame (matches the PostUp mockups: light titanium, black bezel, Dynamic Island) ---------- */
+.iphone {
+  position: relative; display: block; width: 100%;
+  padding: 1.1%; border-radius: 16.4% / 7.7%;
+  background: linear-gradient(135deg, #f1f1f3 0%, #b8b8bd 22%, #ececef 48%, #a7a7ac 74%, #e4e4e7 100%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6), 0 24px 48px rgba(0,0,0,0.5);
+}
+.iphone-bezel { display: block; padding: 2.4%; border-radius: 15.6% / 7.3%; background: #050505; }
+.iphone-screen { position: relative; display: block; overflow: hidden; aspect-ratio: 393 / 852; border-radius: 13.4% / 6.2%; background: #fff; }
+.iphone-screen img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.iphone-island { position: absolute; left: 50%; top: 1.3%; width: 31.8%; height: 4.3%; transform: translateX(-50%); border-radius: 999px; background: #000; }
+.iphone-island::after { content: ""; position: absolute; right: 9%; top: 50%; width: 22%; aspect-ratio: 1; transform: translateY(-50%); border-radius: 50%; background: radial-gradient(circle at 40% 40%, #2b2e4a, #0b0b14 70%); }
+.iphone .btn { position: absolute; width: 1%; min-width: 2px; border-radius: 2px; background: linear-gradient(90deg, #9d9da2, #e2e2e5); }
+.iphone .b1 { left: -0.8%; top: 15.5%; height: 3.8%; }
+.iphone .b2 { left: -0.8%; top: 22.5%; height: 7.4%; }
+.iphone .b3 { left: -0.8%; top: 31.4%; height: 7.4%; }
+.iphone .b4 { right: -0.8%; top: 25%; height: 11.6%; }
+.phones figure { max-width: 377px; }
+.cs-figma { margin-top: 2px; }
+.phones-more { justify-content: center; gap: 96px; margin-top: 36px; }
+@media (max-width: 760px) { .phones-more { gap: 40px; } }
+
+/* draggable folders */
+@media (hover: hover) and (pointer: fine) {
+  .folder { user-select: none; -webkit-user-select: none; }
+  .folder img { -webkit-user-drag: none; }
+  .folder.dragging { cursor: grabbing; transition: none !important; }
+  .folder.dragging .lf { transform: scale(1.05); filter: drop-shadow(0 26px 34px rgba(0,0,0,0.7)); }
+  .folder.dragging .folder-label { background: var(--select); }
+}
+
+/* ===================== Phone layout ===================== */
+@media (max-width: 760px) {
+  /* Home: name, role, then the folders, then the longer intro, so navigation is on the first screen */
+  .v2-home { display: flex; flex-direction: column; padding-bottom: 56px; }
+  .v2-hero { display: contents; }
+  .v2-name { order: 1; margin-top: 36px; font-size: 40px; line-height: 46px; }
+  .v2-home .hero-role { order: 2; }
+  .v2-home .desktop { order: 3; margin: 44px 0 8px; justify-content: space-around; }
+  .v2-intro { order: 4; margin-top: 40px; }
+
+  /* Galleries: two photos per row, wide shots across both; tap any photo for full screen */
+  .gallery { grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 24px; grid-auto-flow: row dense; }
+  .g-tile.wide { grid-column: span 2; aspect-ratio: 893 / 516; }
+
+  /* App screens: swipe sideways through the phones instead of a long stack */
+  .phones {
+    flex-direction: row; align-items: flex-start; justify-content: flex-start; gap: 20px;
+    overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+    margin-left: calc(-1 * var(--page-x)); margin-right: calc(-1 * var(--page-x));
+    padding: 8px var(--page-x) 12px; scrollbar-width: none;
+  }
+  .phones::-webkit-scrollbar { display: none; }
+  .phones figure, .phones-more figure { flex: 0 0 72%; width: auto; max-width: 300px; scroll-snap-align: center; }
+  .phones-more { gap: 20px; }
+  .phones .caption { min-height: 0; }
+  .swipe-hint { display: block; margin-top: 8px; font-size: 13px; color: rgba(255,255,255,0.5); }
+
+  /* Wide diagrams (site map, user flow, customer website) scroll inside their own box */
+  .sitemap .title::after { content: " · swipe to see all"; color: rgba(255,255,255,0.4); }
+
+  /* Bigger tap targets in the header */
+  .nav-toggle { width: 36px; height: 36px; }
+  .nav { gap: 16px; }
+  .dropdown a { padding: 11px 10px; }
+
+  /* Case studies: tighter spacing so sections don't feel stretched */
+  .cs-head { margin-top: 32px; gap: 28px; }
+  .cs-pillars, .cs-split { margin-top: 44px; }
+  .cs-screens { gap: 44px; }
+  .feature .panel { padding: 24px 20px; }
+  .cs-split .left { padding: 24px 20px; }
+  .site-collage { padding: 18px 14px; gap: 8px; }
+}
+@media (min-width: 761px) { .swipe-hint { display: none; } }
+/* Small phones (iPhone SE and similar) */
+@media (max-width: 380px) {
+  .nav { gap: 6px; }
+  .nav a { font-size: 12.5px; }
+  .nav-toggle { width: 32px; height: 32px; }
+  .folder .lf, .folder:hover .lf { width: 128px; }
+  .folder-label, .folder:hover .folder-label { font-size: 15px; }
+  .sec-desktop { gap: 56px 12px; }
+  .v2-name { font-size: 34px; line-height: 40px; }
+}
+@media (max-width: 760px) {
+  .nav-item:last-child > .dropdown { left: auto; right: -6px; }
+}
+@media (max-width: 760px) {
+  .dropdown { background: rgba(22, 22, 24, 0.98); box-shadow: 0 18px 40px rgba(0,0,0,0.6); }
+}
+
+/* ===== Phone header: name on its own row, tabs on a separate row below a divider ===== */
+@media (max-width: 760px) {
+  .site-header .container { gap: 0; padding-top: 0; padding-bottom: 0; }
+  .site-header .logo { display: inline-block; align-self: flex-start; padding: 14px 0 12px; font-size: 18px; }
+  .site-header .nav {
+    width: 100%; justify-content: space-between; gap: 12px;
+    padding: 6px 0 8px; border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .site-header .nav-item { min-height: 40px; }
+  .site-header .nav-link { padding: 8px 0; }
+  .site-header.scrolled .container { padding-top: 0; padding-bottom: 0; }
+  .site-header.scrolled .logo { padding: 9px 0 8px; font-size: 16px; }
+  .site-header.scrolled .nav { padding: 2px 0 4px; }
+
+  /* smaller folders */
+  .folder .lf, .folder:hover .lf { width: 116px; }
+  .folder-label, .folder:hover .folder-label, .folder:focus-visible .folder-label { font-size: 15px; line-height: 20px; margin-top: 6px; }
+  .folder .pf-meta, .sec-desktop .pf-meta { font-size: 12px; max-width: 150px; }
+  .v2-home .desktop { margin: 36px 0 0; justify-content: center; gap: 48px; }
+  .sec-desktop { margin-top: 64px; gap: 52px 16px; }
+}
+@media (max-width: 380px) {
+  .site-header .nav a { font-size: 12.5px; }
+  .folder .lf, .folder:hover .lf { width: 104px; }
+  .v2-home .desktop { gap: 32px; }
+}
+
+/* Home subtitle: larger and spaced to span the full width of the name */
+.v2-home .hero-role { font-size: 26px; line-height: 32px; margin-top: 6px; letter-spacing: 9.4px; white-space: nowrap; }
+.js .v2-home .hero-role { letter-spacing: 0; animation-name: role-in-wide; }
+@keyframes role-in-wide { to { opacity: 1; letter-spacing: 9.4px; } }
+@media (max-width: 760px) {
+  .v2-home .hero-role { font-size: 13px; line-height: 18px; margin-top: 4px; letter-spacing: 4.6px; }
+  @keyframes role-in-wide { to { opacity: 1; letter-spacing: 4.6px; } }
+}
+@media (max-width: 380px) {
+  .v2-home .hero-role { font-size: 11px; letter-spacing: 3.9px; }
+  @keyframes role-in-wide { to { opacity: 1; letter-spacing: 3.9px; } }
+}
